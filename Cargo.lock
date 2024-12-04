@@ -817,7 +817,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mjml-php"
+name = "mjml"
 version = "0.1.0"
 dependencies = [
  "ext-php-rs",

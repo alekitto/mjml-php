@@ -4,7 +4,7 @@
 
 namespace Mjml {
     class Mjml {
-        public function __construct(?array $options) {}
+        public function __construct(?array $options = null) {}
 
         public function render(string $mjml): string {}
     }

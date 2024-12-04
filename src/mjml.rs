@@ -20,11 +20,10 @@ impl Mjml {
     pub fn __construct(
         options: Option<std::collections::HashMap<String, &ext_php_rs::types::Zval>>,
     ) -> PhpResult<Self> {
+        let mut opts = RenderOptions::default();
         let parser_options = ParserOptions {
             include_loader: Box::new(PhpStreamLoader {}),
         };
-
-        let mut opts = RenderOptions::default();
 
         if let Some(options) = options {
             opts.disable_comments = (|| -> PhpResult<bool> {
@@ -102,9 +101,11 @@ impl Mjml {
 
         match mjml.render(&self.render_options) {
             Ok(rendered) => Ok(rendered),
-            Err(e) => Err(PhpException::new(e.to_string(), 0, unsafe {
-                RENDER_EXCEPTION.expect("did not set exception ce")
-            })),
+            Err(e) => {
+                Err(PhpException::new(e.to_string(), 0, unsafe {
+                    RENDER_EXCEPTION.expect("did not set exception ce")
+                }))
+            },
         }
     }
 }

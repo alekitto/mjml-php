@@ -1,5 +1,5 @@
 use ext_php_rs::ffi::{php_stream, php_stream_context, zend_string};
-use std::ffi::c_char;
+use std::ffi::{c_char, CString};
 use std::io::Read;
 use std::os::raw::c_int;
 use std::ptr;
@@ -26,6 +26,9 @@ pub struct PhpStream(*mut php_stream);
 
 impl PhpStream {
     pub fn open(path: &str, mode: &str) -> Result<Self, String> {
+        let mode = CString::new(mode).expect("invalid mode");
+        let path = CString::new(path).expect("invalid mode");
+
         let stream = unsafe {
             _php_stream_open_wrapper_ex(
                 path.as_ptr().cast(),
