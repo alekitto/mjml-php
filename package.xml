@@ -39,6 +39,9 @@
             <file name="LICENSE" role="doc" />
             <file name="config.m4" role="src" />
             <file name="src/lib.rs" role="src" />
+            <file name="src/exception.rs" role="src" />
+            <file name="src/mjml.rs" role="src" />
+            <file name="src/php_stream.rs" role="src" />
         </dir>
     </contents>
     <dependencies>

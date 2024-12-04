@@ -6,6 +6,11 @@ if ! test -x "$CARGO"; then
 AC_MSG_ERROR([cargo command missing, please reinstall the cargo distribution])
 fi
 
+AC_PATH_PROG(PHP_CONFIG, php-config, no)
+if ! test -x "$PHP_CONFIG"; then
+AC_MSG_ERROR([php-config command missing])
+fi
+
 CARGO_MODE_FLAGS="--release"
 CARGO_MODE_DIR="release"
 CARGO_FEATURES_FLAGS=""
@@ -21,11 +26,11 @@ all: cargo_build
 clean: cargo_clean
 
 cargo_build:
-	PHP_CONFIG=$PHP_PHP_CONFIG cargo build $CARGO_MODE_FLAGS $CARGO_FEATURES_FLAGS
-	if [[ -f ./target/$CARGO_MODE_DIR/libmjml_php.dylib ]] ; then \\
-		cp ./target/$CARGO_MODE_DIR/libmjml_php.dylib ./modules/mjml.dylib ; fi
-	if [[ -f ./target/$CARGO_MODE_DIR/libmjml_php.so ]] ; then \\
-		cp ./target/$CARGO_MODE_DIR/libmjml_php.so ./modules/mjml.so ; fi
+	$CARGO build $CARGO_MODE_FLAGS $CARGO_FEATURES_FLAGS
+	if [[ -f ./target/$CARGO_MODE_DIR/libmjml.dylib ]] ; then \\
+		cp ./target/$CARGO_MODE_DIR/libmjml.dylib ./modules/mjml.dylib ; fi
+	if [[ -f ./target/$CARGO_MODE_DIR/libmjml.so ]] ; then \\
+		cp ./target/$CARGO_MODE_DIR/libmjml.so ./modules/mjml.so ; fi
 
 cargo_clean:
 	cargo clean
