@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<package version="2.0"
+         xmlns="http://pear.php.net/dtd/package-2.0"
+         xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd"
+>
+    <name>mjml</name>
+    <channel>pecl.php.net</channel>
+    <summary>MJML email markup renderer</summary>
+    <description>
+        MJML is a markup language for emails.
+        This package exposes a native php class to render MJML into valid email-friendly HTML. It is based on
+        the mrml project (a mjml reimplementation written in Rust).
+    </description>
+    <lead>
+        <name>alekitto</name>
+        <user>alekitto</user>
+        <email>alekitto@gmail.com</email>
+        <active>yes</active>
+    </lead>
+    <date>2024-12-04</date>
+    <version>
+        <release>0.0.0</release>
+        <api>0.0.0</api>
+    </version>
+    <stability>
+        <release>beta</release>
+        <api>beta</api>
+    </stability>
+    <license uri="http://license.coscl.org.cn/MIT/">MIT</license>
+    <notes>        Release notes.	</notes>
+    <contents>
+        <dir name="/">
+            <file name="Cargo.lock" role="src" />
+            <file name="Cargo.toml" role="src" />
+            <file name="README.md" role="doc" />
+            <file name="LICENSE" role="doc" />
+            <file name="config.m4" role="src" />
+            <file name="src/lib.rs" role="src" />
+        </dir>
+    </contents>
+    <dependencies>
+        <required>
+            <php>
+                <min>7.2.0</min>
+            </php>
+            <pearinstaller>
+                <min>1.4.0</min>
+            </pearinstaller>
+        </required>
+    </dependencies>
+    <providesextension>mjml</providesextension>
+    <extsrcrelease>
+        <configureoption default="no" name="enable-cargo-debug" prompt="enable cargo debug?" />
+    </extsrcrelease>
+</package>
