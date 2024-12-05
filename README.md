@@ -6,12 +6,12 @@ Rust needs to be available to build this extension from source.
 ## Building, extending PHP
 
 ```sh
-$> phpize
-$> ./configure
-$> make
-$> make install
+$ phpize
+$ ./configure
+$ make
+$ make install
 # in php.ini set extension=mjml.so or:
-$> php -dextension=path-to-project/target/release/mjml.so <your php file>
+$ php -dextension=path-to-project/target/release/mjml.so <your php file>
 ```
 
 # PHP
