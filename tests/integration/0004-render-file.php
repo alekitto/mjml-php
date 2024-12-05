@@ -1,5 +1,5 @@
 <?php
 $mjml = new \Mjml\Mjml();
-$result = $mjml->renderFile(__DIR__ . '/../data/t01.mjml');
+$result = $mjml->renderFile(__DIR__ . '/../data/t04.mjml');
 
 echo $result;

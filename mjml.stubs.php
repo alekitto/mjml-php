@@ -6,7 +6,30 @@ declare(strict_types=1);
 
 namespace Mjml {
     use Mjml\Exception\RenderException;
+    use Stringable;
     use TypeError;
+
+    class Email implements Stringable {
+        /**
+         * Gets the email title/subject if set.
+         */
+        public function getTitle(): ?string {}
+
+        /**
+         * Gets the email preview text, if present.
+         */
+        public function getPreview(): ?string {}
+
+        /**
+         * Gets the email HTML body.
+         */
+        public function getBody(): string {}
+
+        /**
+         * @inheritDoc
+         */
+        public function __toString(): string {}
+    }
 
     class Mjml {
         /**
@@ -35,7 +58,7 @@ namespace Mjml {
          *
          * @throws RenderException
          */
-        public function render(string $mjml): string {}
+        public function render(string $mjml): Email {}
 
         /**
          * Render a MJML file.
@@ -43,7 +66,7 @@ namespace Mjml {
          *
          * @throws RenderException
          */
-        public function renderFile(string $path): string {}
+        public function renderFile(string $path): Email {}
     }
 }
 

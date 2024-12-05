@@ -10,6 +10,36 @@ use std::borrow::Cow;
 use std::io::{ErrorKind, Read};
 use std::sync::Arc;
 
+#[php_class(name = "Mjml\\Email")]
+#[derive(Default)]
+pub struct Email {
+    title: Option<String>,
+    preview: Option<String>,
+    body: String,
+}
+
+#[php_impl]
+impl Email {
+    /// Gets the email title/subject if set.
+    pub fn get_title(&self) -> Option<String> {
+        self.title.clone()
+    }
+
+    /// Gets the email preview text, if present.
+    pub fn get_preview(&self) -> Option<String> {
+        self.preview.clone()
+    }
+
+    /// Gets the email HTML body.
+    pub fn get_body(&self) -> String {
+        self.body.clone()
+    }
+
+    pub fn __to_string(&self) -> String {
+        self.get_body()
+    }
+}
+
 /// Represents a MJML parser/renderer.
 #[php_class(name = "Mjml\\Mjml")]
 pub struct Mjml {
@@ -43,10 +73,14 @@ impl Mjml {
                     return Ok(false);
                 };
                 let Some(value) = zv.bool() else {
-                    return Err(PhpException::new(format!(
-                        "Invalid option 'disable_comments': expected bool, {} given.",
-                        zv.get_type()
-                    ), 0, ce::type_error()));
+                    return Err(PhpException::new(
+                        format!(
+                            "Invalid option 'disable_comments': expected bool, {} given.",
+                            zv.get_type()
+                        ),
+                        0,
+                        ce::type_error(),
+                    ));
                 };
 
                 Ok(value)
@@ -57,10 +91,14 @@ impl Mjml {
                     return Ok(None);
                 };
                 let Some(value) = zv.string() else {
-                    return Err(PhpException::new(format!(
-                        "Invalid option 'social_icon_origin': expected string, {} given.",
-                        zv.get_type()
-                    ), 0, ce::type_error()));
+                    return Err(PhpException::new(
+                        format!(
+                            "Invalid option 'social_icon_origin': expected string, {} given.",
+                            zv.get_type()
+                        ),
+                        0,
+                        ce::type_error(),
+                    ));
                 };
 
                 Ok(Some(value.into()))
@@ -81,11 +119,15 @@ impl Mjml {
                 for (k, v) in value.iter() {
                     let key = k.to_string();
                     let Some(v) = v.string() else {
-                        return Err(PhpException::new(format!(
-                            "Invalid option 'fonts': expected string, {} given at index {}.",
-                            zv.get_type(),
-                            key
-                        ), 0, ce::type_error()));
+                        return Err(PhpException::new(
+                            format!(
+                                "Invalid option 'fonts': expected string, {} given at index {}.",
+                                zv.get_type(),
+                                key
+                            ),
+                            0,
+                            ce::type_error(),
+                        ));
                     };
 
                     map.insert(key, v.into());
@@ -106,7 +148,7 @@ impl Mjml {
     /// # Arguments
     ///
     /// * `mjml` - The MJML markup to render
-    pub fn render(&self, mjml: String) -> PhpResult<String> {
+    pub fn render(&self, mjml: String) -> PhpResult<Email> {
         let mjml = match mrml::parse_with_options(mjml, &self.parser_options) {
             Ok(parsed) => parsed,
             Err(e) => {
@@ -116,14 +158,25 @@ impl Mjml {
             }
         };
 
-        match mjml.render(&self.render_options) {
+        let body = match mjml.render(&self.render_options) {
             Ok(rendered) => Ok(rendered),
-            Err(e) => {
-                Err(PhpException::new(e.to_string(), 0, unsafe {
-                    RENDER_EXCEPTION.expect("did not set exception ce")
-                }))
-            },
+            Err(e) => Err(PhpException::new(e.to_string(), 0, unsafe {
+                RENDER_EXCEPTION.expect("did not set exception ce")
+            })),
+        }?;
+
+        let mut email = Email {
+            title: None,
+            preview: None,
+            body,
+        };
+
+        if let Some(head) = mjml.head() {
+            email.title = head.title().map(|title| title.children.to_string());
+            email.preview = head.preview().map(|preview| preview.children.to_string());
         }
+
+        Ok(email)
     }
 
     /// Render a MJML file.
@@ -132,7 +185,7 @@ impl Mjml {
     /// # Arguments
     ///
     /// * `path` - The MJML file path to render
-    pub fn render_file(&self, path: String) -> PhpResult<String> {
+    pub fn render_file(&self, path: String) -> PhpResult<Email> {
         let mut stream = PhpStream::open(&path, "rb").map_err(|e| {
             PhpException::new(e.to_string(), 0, unsafe {
                 RENDER_EXCEPTION.expect("did not set exception ce")

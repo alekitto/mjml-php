@@ -9,6 +9,7 @@ use ext_php_rs::builders::ClassBuilder;
 use ext_php_rs::prelude::*;
 use ext_php_rs::zend::ce;
 
+use mjml::Email;
 use mjml::Mjml;
 
 #[php_startup]
@@ -28,7 +29,6 @@ pub fn startup() {
 pub fn get_module(module: ModuleBuilder) -> ModuleBuilder {
     module
 }
-
 
 #[cfg(test)]
 mod integration {
