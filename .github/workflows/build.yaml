@@ -1,174 +1,211 @@
 name: Build
 on: [push]
 
+permissions:
+  contents: write
+
 env:
   EXTENSION_NAME: mjml
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
+  tests:
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        php-version: [ '8.0', '8.1', '8.2', '8.3' ]
-        target_platform:
-          - { target: x86_64-unknown-linux-gnu, platform: linux/amd64 }
-          - { target: aarch64-unknown-linux-gnu, platform: linux/arm64 }
+        php-version: [ "8.3" ]
+        clang: [ "16" ]
+        target: [ "x86_64-unknown-linux-gnu" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache cargo and LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            ${{ runner.temp }}/llvm-${{ matrix.clang }}
+          key: ${{ matrix.php-version }}-test
+
+      - name: Setup LLVM & Clang
+        id: clang
+        if: runner.os == 'Linux'
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: ${{ matrix.clang }}
+          directory: ${{ runner.temp }}/llvm-${{ matrix.clang }}
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+      - name: Configure Clang
+        run: |
+          echo "LIBCLANG_PATH=${{ runner.temp }}/llvm-${{ matrix.clang }}/lib" >> $GITHUB_ENV
+          echo "LLVM_VERSION=${{ steps.clang.outputs.version }}" >> $GITHUB_ENV
+          echo "LLVM_CONFIG_PATH=${{ runner.temp }}/llvm-${{ matrix.clang }}/bin/llvm-config" >> $GITHUB_ENV
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: php-config
+
+      - name: Install latest Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup default stable
+          rustup target add ${{ matrix.target }}
+
+      - name: Build module
+        run: |
+          phpize
+          cargo build --target ${{ matrix.target }} --lib
+          cargo test --target ${{ matrix.target }}
+
+      - name: Run PHP Test
+        run: NO_INTERACTION=1 php run-tests.php -n -d extension=target/${{ matrix.target }}/debug/lib${{ env.EXTENSION_NAME }}.so
+
+  build:
+    runs-on: ${{ matrix.os }}
+    needs: tests
+    strategy:
+      matrix:
+        clang: [ "16" ]
+        php-version: [ "8.1", "8.2", "8.3" ]
+        target: [ x86_64-pc-windows-msvc, aarch64-apple-darwin, x86_64-apple-darwin, x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu ]
+        phpts: [ "nts", "ts" ]
+        include:
+          - { rust_channel: stable }
+          - { target: x86_64-pc-windows-msvc, rust_channel: nightly }
+          - { target: x86_64-pc-windows-msvc, os: windows-latest }
+          - { target: aarch64-apple-darwin, os: macos-latest }
+          - { target: x86_64-apple-darwin, os: macos-latest }
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-22.04 }
+          - { target: aarch64-unknown-linux-gnu, os: ubuntu-22.04 }
+        exclude:
+          - { target: aarch64-apple-darwin, phpts: ts }
+          - { target: x86_64-apple-darwin, phpts: ts }
+          - { target: x86_64-unknown-linux-gnu, phpts: ts }
+          - { target: aarch64-unknown-linux-gnu, phpts: ts }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
+      - name: Cache cargo and LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ matrix.php-version }}-${{ matrix.target_platform.target }}
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            ${{ runner.temp }}/llvm-${{ matrix.clang }}
+          key: ${{ matrix.php-version }}-${{ matrix.target }}-${{ matrix.clang }}-${{ matrix.phpts }}-${{ matrix.rust_channel }}-build
 
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Setup LLVM & Clang
+        id: clang
+        if: runner.os == 'Linux'
+        uses: KyleMayes/install-llvm-action@v2
         with:
-          driver-opts: network=host
+          version: ${{ matrix.clang }}
+          directory: ${{ runner.temp }}/llvm-${{ matrix.clang }}
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-      - name: Setup docker
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          platforms: ${{ matrix.target_platform.platform }}
-          push: true
-          tags: localhost:5000/php-build:latest
-          build-args: |
-            FROM_PHP=${{ matrix.php-version }}
+      - name: Configure Clang
+        if: runner.os == 'Linux'
+        run: |
+          echo "LIBCLANG_PATH=${{ runner.temp }}/llvm-${{ matrix.clang }}/lib" >> $GITHUB_ENV
+          echo "LLVM_VERSION=${{ steps.clang.outputs.version }}" >> $GITHUB_ENV
+          echo "LLVM_CONFIG_PATH=${{ runner.temp }}/llvm-${{ matrix.clang }}/bin/llvm-config" >> $GITHUB_ENV
 
-      - name: Build
-        run: docker run -v ~/.cargo/registry:/root/.cargo/registry -v ~/.cargo/git:/root/.cargo/git --platform ${{ matrix.target_platform.platform }} --rm -v $PWD:/code localhost:5000/php-build:latest bash -c 'phpize && ./configure && make && make install && docker-php-ext-enable mjml && php run-tests.php -q'
+      - name: Install latest Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          #source $HOME/.cargo/env
+          rustup default ${{ matrix.rust_channel }}
+          rustup target add ${{ matrix.target }}
+        shell: bash
 
-      - name: Rename file
-        run: cp target/release/lib${{ env.EXTENSION_NAME }}.so php${{ matrix.php-version }}-${{ matrix.target_platform.target }}-${{ env.EXTENSION_NAME }}.so
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: php${{ matrix.php-version }}-${{ matrix.target_platform.target }}
-          path: php${{ matrix.php-version }}-${{ matrix.target_platform.target }}-${{ env.EXTENSION_NAME }}.so
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            php${{ matrix.php-version }}-${{ matrix.target_platform.target }}-${{ env.EXTENSION_NAME }}.so
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  macos:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        target: [ aarch64-apple-darwin, x86_64-apple-darwin ]
-        php-version: [ '8.2', '8.3' ]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ matrix.php-version }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Install latest rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-      - name: Setup PHP
+      - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: false
-          command: build
-          args: --release --target ${{ matrix.target }} --lib
+          tools: php-config
+        env:
+          phpts: ${{ matrix.phpts }}
+
+      - name: OS Specific Configuration - Linux
+        if: runner.os == 'Linux'
+        run: |
+          echo "OUTPUT_FILE=lib${{ env.EXTENSION_NAME }}.so" >> $GITHUB_ENV
+          echo "LIB_EXT=so" >> $GITHUB_ENV
+          sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross musl-tools musl-dev
+
+      - name: OS Specific Configuration - macOS
+        if: runner.os == 'macOS'
+        run: |
+          echo "OUTPUT_FILE=lib${{ env.EXTENSION_NAME }}.dylib" >> $GITHUB_ENV
+          echo "LIB_EXT=so" >> $GITHUB_ENV
+
+      - name: OS Specific Configuration - Windows
+        if: runner.os == 'Windows'
+        run: |
+          echo "OUTPUT_FILE=${{ env.EXTENSION_NAME }}.dll" >> $GITHUB_ENV
+          echo "LIB_EXT=dll" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Build module
+        run: |
+          cargo build --release --target ${{ matrix.target }} --lib
 
       - name: Rename file
-        run: mv target/${{ matrix.target }}/release/lib${{ env.EXTENSION_NAME }}.dylib target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dylib
+        run: mv target/${{ matrix.target }}/release/${{ env.OUTPUT_FILE }} target/php${{ matrix.php-version }}-${{ matrix.phpts }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.${{ env.LIB_EXT }}
+        shell: bash
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: php${{ matrix.php-version }}-${{ matrix.target }}
-          path: target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dylib
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dylib
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: php${{ matrix.php-version }}-${{ matrix.phpts }}-${{ matrix.target }}
+          path: target/php${{ matrix.php-version }}-${{ matrix.phpts }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.${{ env.LIB_EXT }}
 
-  windows:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        php-version: [ '8.0.30', '8.1.31', '8.2.26', '8.3.14' ]
-        target: [ 'x86_64-pc-windows-msvc' ]
+  release:
+    runs-on: ubuntu-22.04
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ matrix.php-version }}-windows-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Get Cargo Version
+        id: cargo_version
+        run: |
+          VERSION=$(grep '^version =' Cargo.toml | head -n 1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+        shell: bash
 
-      - name: Install latest rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          toolchain: nightly
-          target: ${{ matrix.target }}
-          override: true
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: false
-          command: build
-          args: --release --lib
+          path: ./artifacts
 
-      - name: Rename file
-        run: mv target/release/php_${{ env.EXTENSION_NAME }}.dll target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dll
-
-      - uses: actions/upload-artifact@v3
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: create_release
+        uses: softprops/action-gh-release@v2
         with:
-          name: php${{ matrix.php-version }}-${{ matrix.target }}
-          path: target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dll
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dll
+          tag_name: v${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          files: ./artifacts/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
