@@ -26,11 +26,11 @@
         <api>1.0.0</api>
     </version>
     <stability>
-        <release>beta</release>
-        <api>beta</api>
+        <release>stable</release>
+        <api>stable</api>
     </stability>
     <license uri="http://license.coscl.org.cn/MIT/">MIT</license>
-    <notes>        Release notes.	</notes>
+    <notes>First release of MJML extension</notes>
     <contents>
         <dir name="/">
             <file name="Cargo.lock" role="src" />
