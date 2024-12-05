@@ -1,5 +1,5 @@
 --TEST--
-Mjml\Mjml::renderFile
+Mjml\Email::getTitle
 --FILE--
 <?php
 include __DIR__ . '/integration/0006-title.php';

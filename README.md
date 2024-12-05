@@ -27,11 +27,17 @@ echo $rendered; // Email-friendly HTML
 
 ## Classes and Methods
 
-The extension exposes an `Mjml\Mjml` class to parse and render mjml into HTML. You can use the following methods:
+The extension exposes a `Mjml\Mjml` class to parse and render mjml into HTML. You can use the following methods:
 
-- `public function render(string $mjml): string`: render a mjml string into HTML
-- `public function renderFile(string $path): string`: read the specified file and render the mjml content into HTML (stream wrappers are supported).
+- `public function render(string $mjml): Mjml\Email`: render a mjml string into HTML
+- `public function renderFile(string $path): Mjml\Email`: read the specified file and render the mjml content into HTML (stream wrappers are supported).
 - `public static function defaultFonts(): array`: returns a hashmap with the default fonts
+
+`render` and `renderFile` methods return a `Mjml\Email` object which exposes the following methods:
+
+- `public function getTitle(): string|null`: returns the content of the `<mj-title>` tag, if set
+- `public function getPreview(): string|null`: returns the content of the `<mj-preview>` tag, if present
+- `public function getBody(): string`: returns the HTML email body
 
 ## Options
 
