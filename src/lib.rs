@@ -89,4 +89,14 @@ mod integration {
     pub fn test_include_external() {
         assert!(run_php("0001-include.php"));
     }
+
+    #[test]
+    pub fn test_render_file() {
+        assert!(run_php("0004-render-file.php"));
+    }
+
+    #[test]
+    pub fn test_default_fonts() {
+        assert!(run_php("0005-default-fonts.php"));
+    }
 }

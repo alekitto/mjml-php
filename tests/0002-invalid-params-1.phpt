@@ -5,4 +5,4 @@ invalid parameters 1
 include __DIR__ . '/integration/0002-invalid-params-1.php';
 ?>
 --EXPECTF--
-Fatal error: Uncaught Exception: Invalid option 'disable_comments': expected bool, String given. %a
+Fatal error: Uncaught TypeError: Invalid option 'disable_comments': expected bool, String given. %a
