@@ -10,6 +10,7 @@ use std::borrow::Cow;
 use std::io::{ErrorKind, Read};
 use std::sync::Arc;
 
+/// Represents a MJML parser/renderer.
 #[php_class(name = "Mjml\\Mjml")]
 pub struct Mjml {
     parser_options: ParserOptions,
@@ -18,6 +19,16 @@ pub struct Mjml {
 
 #[php_impl]
 impl Mjml {
+    /// Constructor.
+    ///
+    /// Accepts the following options:
+    /// - disable_comments: If true, do not include comments in the HTML output
+    /// - social_icon_origin: Base URL for mj-social-element images
+    /// - fonts: Key-value array of fonts used in the email body
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - render options
     pub fn __construct(
         options: Option<std::collections::HashMap<String, &ext_php_rs::types::Zval>>,
     ) -> PhpResult<Self> {
@@ -90,6 +101,11 @@ impl Mjml {
         })
     }
 
+    /// Renders a MJML template into an email-friendly HTML markup.
+    ///
+    /// # Arguments
+    ///
+    /// * `mjml` - The MJML markup to render
     pub fn render(&self, mjml: String) -> PhpResult<String> {
         let mjml = match mrml::parse_with_options(mjml, &self.parser_options) {
             Ok(parsed) => parsed,
@@ -110,6 +126,12 @@ impl Mjml {
         }
     }
 
+    /// Render a MJML file.
+    /// PHP Stream wrappers are supported.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The MJML file path to render
     pub fn render_file(&self, path: String) -> PhpResult<String> {
         let mut stream = PhpStream::open(&path, "rb").map_err(|e| {
             PhpException::new(e.to_string(), 0, unsafe {
@@ -127,6 +149,7 @@ impl Mjml {
         self.render(template)
     }
 
+    /// Returns the default fonts hashmap used in rendered emails.
     pub fn default_fonts() -> ext_php_rs::boxed::ZBox<ext_php_rs::types::ZendHashTable> {
         let mut result = ext_php_rs::types::ZendHashTable::new();
         for (name, url) in default_fonts() {
