@@ -9,11 +9,11 @@ env:
 
 jobs:
   tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         php-version: [ "8.3" ]
-        clang: [ "16" ]
+        clang: [ "14" ]
         target: [ "x86_64-unknown-linux-gnu" ]
 
     steps:
@@ -76,7 +76,7 @@ jobs:
     needs: tests
     strategy:
       matrix:
-        clang: [ "16" ]
+        clang: [ "14" ]
         php-version: [ "8.1", "8.2", "8.3" ]
         target: [ x86_64-pc-windows-msvc, aarch64-apple-darwin, x86_64-apple-darwin, x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu ]
         phpts: [ "nts", "ts" ]
@@ -86,8 +86,8 @@ jobs:
           - { target: x86_64-pc-windows-msvc, os: windows-latest }
           - { target: aarch64-apple-darwin, os: macos-latest }
           - { target: x86_64-apple-darwin, os: macos-latest }
-          - { target: x86_64-unknown-linux-gnu, os: ubuntu-22.04 }
-          - { target: aarch64-unknown-linux-gnu, os: ubuntu-22.04 }
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-20.04 }
+          - { target: aarch64-unknown-linux-gnu, os: ubuntu-20.04 }
         exclude:
           - { target: aarch64-apple-darwin, phpts: ts }
           - { target: x86_64-apple-darwin, phpts: ts }
@@ -148,6 +148,7 @@ jobs:
         run: |
           echo "OUTPUT_FILE=lib${{ env.EXTENSION_NAME }}.so" >> $GITHUB_ENV
           echo "LIB_EXT=so" >> $GITHUB_ENV
+          sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross musl-tools musl-dev
 
       - name: OS Specific Configuration - macOS
@@ -177,7 +178,7 @@ jobs:
           path: target/php${{ matrix.php-version }}-${{ matrix.phpts }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.${{ env.LIB_EXT }}
 
   release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     needs: build
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
 
