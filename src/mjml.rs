@@ -150,7 +150,7 @@ impl Mjml {
     /// * `mjml` - The MJML markup to render
     pub fn render(&self, mjml: String) -> PhpResult<Email> {
         let mjml = match mrml::parse_with_options(mjml, &self.parser_options) {
-            Ok(parsed) => parsed,
+            Ok(parsed) => parsed.element,
             Err(e) => {
                 return Err(PhpException::new(e.to_string(), 0, unsafe {
                     RENDER_EXCEPTION.expect("did not set exception ce")
