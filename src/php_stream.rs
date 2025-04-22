@@ -4,7 +4,7 @@ use std::io::Read;
 use std::os::raw::c_int;
 use std::ptr;
 
-extern "C" {
+unsafe extern "C" {
     fn _php_stream_open_wrapper_ex(
         path: *const ::std::os::raw::c_char,
         mode: *const ::std::os::raw::c_char,
