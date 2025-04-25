@@ -1,0 +1,6 @@
+{
+  "name": "kcs/mjml",
+  "php-ext": {
+    "extension-name": "mjml"
+  }
+}
