@@ -43,3 +43,5 @@ AC_CONFIG_LINKS([ \
   Cargo.toml:Cargo.toml \
   src:src \
 ])
+
+PHP_NEW_EXTENSION(mjml)
