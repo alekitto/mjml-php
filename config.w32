@@ -1,0 +1,37 @@
+// vim:ft=javascript
+
+var PHP_CARGO_DEBUG = "no"
+var PHP_CARGO = "cargo"
+var PHP_MJML_SHARED = "yes"
+
+ARG_WITH("cargo", "cargo program name", "cargo")
+ARG_ENABLE("cargo-debug", "whether to enable cargo debug mode", "no")
+ARG_ENABLE("mjml-shared", "whether to build shared extension", "yes")
+
+DEFINE('PHP_CARGO', PHP_CARGO)
+DEFINE('CARGO_MODE_FLAGS', "--release")
+DEFINE('CARGO_MODE_DIR', "release")
+DEFINE('CARGO_FEATURES_FLAGS', "")
+
+if (PHP_CARGO_DEBUG != "no") {
+  DEFINE('CARGO_MODE_FLAGS', "")
+  DEFINE('CARGO_MODE_DIR', "debug")
+}
+
+MFO.WriteLine("all: cargo_build")
+MFO.WriteBlankLines(1)
+MFO.WriteLine("clean: cargo_clean")
+MFO.WriteBlankLines(1)
+MFO.WriteLine("cargo_build:")
+MFO.WriteLine("\t$(PHP_CARGO) build $(CARGO_MODE_FLAGS) $(CARGO_FEATURE_FLAGS)")
+MFO.WriteLine("\tif not exist modules (mkdir modules)")
+MFO.WriteLine("\tcopy target\\$(CARGO_MODE_DIR)\\mjml.dll .\\modules\\mjml.dll")
+MFO.WriteBlankLines(1)
+MFO.WriteLine("cargo_clean:")
+MFO.WriteLine("\tcargo clean")
+MFO.WriteBlankLines(1)
+MFO.WriteLine(".PHONY: cargo_build cargo_clean")
+
+DEFINE('PHP', PHP_DIR + "\\php.exe")
+
+// EXTENSION(mjml, "Cargo.toml")
