@@ -1,13 +1,13 @@
 [package]
 name = "mjml"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2024"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-ext-php-rs = "*"
+ext-php-rs = { git = "https://github.com/alekitto/ext-php-rs.git", branch = "0-13-1-fix" }
 mrml = "5"
 
 [profile.release]

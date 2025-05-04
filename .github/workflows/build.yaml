@@ -111,13 +111,14 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           #source $HOME/.cargo/env
-          rustup default stable
+          rustup default nightly
         shell: bash
 
       - name: Build the extension
         uses: php/php-windows-builder/extension@v1
         with:
           php-version: ${{ matrix.php-version }}
+          run-tests: 'false'
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
 
@@ -235,21 +236,13 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
 
-      - name: Download all artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ./artifacts
-          merge-multiple: true
+          path: artifacts
+          merge-multiple: 'true'
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: create_release
-        uses: softprops/action-gh-release@v2
+      - name: Create release
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ env.VERSION }}
-          name: Release ${{ env.VERSION }}
-          draft: false
-          prerelease: false
-          files: ./artifacts/**
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "artifacts/php*"

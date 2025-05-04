@@ -24,8 +24,14 @@ MFO.WriteLine("clean: cargo_clean")
 MFO.WriteBlankLines(1)
 MFO.WriteLine("cargo_build:")
 MFO.WriteLine("\t$(PHP_CARGO) build $(CARGO_MODE_FLAGS) $(CARGO_FEATURE_FLAGS)")
-MFO.WriteLine("\tif not exist modules (mkdir modules)")
-MFO.WriteLine("\tcopy target\\$(CARGO_MODE_DIR)\\mjml.dll .\\modules\\mjml.dll")
+MFO.WriteLine("\tif not exist x64 (mkdir x64)")
+if (PHP_ZTS == "yes") {
+    MFO.WriteLine("\tif not exist x64\\Release_TS (mkdir x64\\Release_TS)")
+    MFO.WriteLine("\tcopy target\\$(CARGO_MODE_DIR)\\mjml.dll .\\x64\\Release_TS\\php_mjml.dll")
+} else {
+    MFO.WriteLine("\tif not exist x64\\Release (mkdir x64\\Release)")
+    MFO.WriteLine("\tcopy target\\$(CARGO_MODE_DIR)\\mjml.dll .\\x64\\Release\\php_mjml.dll")
+}
 MFO.WriteBlankLines(1)
 MFO.WriteLine("cargo_clean:")
 MFO.WriteLine("\tcargo clean")
