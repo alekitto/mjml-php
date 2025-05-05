@@ -1,6 +1,7 @@
 {
   "name": "kcs/mjml",
   "type": "php-ext",
+  "license": "MIT",
   "php-ext": {
     "extension-name": "mjml"
   }
