@@ -178,11 +178,7 @@ jobs:
           echo "LLVM_CONFIG_PATH=${{ runner.temp }}/llvm-${{ matrix.clang }}/bin/llvm-config" >> $GITHUB_ENV
 
       - name: Install latest Rust toolchain
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          #source $HOME/.cargo/env
-          rustup default ${{ matrix.rust_channel }}
-          rustup target add ${{ matrix.target }}
+        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${{ matrix.rust_channel }} --target ${{ matrix.target }}
         shell: bash
 
       - name: Setup PHP with PECL extension
