@@ -1,6 +1,20 @@
 # mjml-php
 
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](./docs/index.md)
+
 PHP extension that embeds [MRML](https://github.com/jdrouet/mrml), the [MJML](https://mjml.io) rendering engine written in Rust, so that you can render MJML templates directly from PHP without shelling out to a CLI tool.
+
+## Documentation
+
+The full documentation lives under [`./docs/`](./docs/index.md) and is published as a MkDocs site. Start with the [architecture overview](./docs/index.md) and consult the dedicated guides for [installation](./docs/installation.md), [configuration](./docs/configuration.md), [usage](./docs/usage.md), [API details](./docs/api.md), and [troubleshooting](./docs/troubleshooting.md).
+
+To preview the site locally install MkDocs and run:
+
+```sh
+composer run docs:serve
+```
+
+This command proxies to `mkdocs serve` using the navigation defined in [`mkdocs.yml`](./mkdocs.yml).
 
 ## Overview
 

@@ -1,0 +1,18 @@
+site_name: MJML PHP
+site_description: Documentation for the mjml PHP extension backed by the MRML renderer.
+site_url: https://example.com/mjml-php-docs/
+repo_url: https://github.com/kcs-dev/mjml-php
+nav:
+  - Home: docs/index.md
+  - Installation: docs/installation.md
+  - Configuration: docs/configuration.md
+  - Usage: docs/usage.md
+  - API: docs/api.md
+  - Troubleshooting: docs/troubleshooting.md
+theme:
+  name: material
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - codehilite

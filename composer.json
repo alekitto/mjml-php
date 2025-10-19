@@ -4,5 +4,9 @@
   "license": "MIT",
   "php-ext": {
     "extension-name": "mjml"
+  },
+  "scripts": {
+    "docs:serve": "mkdocs serve",
+    "docs:build": "mkdocs build"
   }
 }
