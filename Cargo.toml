@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-ext-php-rs = { git = "https://github.com/alekitto/ext-php-rs.git", branch = "0-13-1-fix" }
+ext-php-rs = "0.14.2"
 mrml = "5"
 
 [profile.release]

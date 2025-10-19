@@ -3,14 +3,15 @@ use crate::php_stream::PhpStream;
 use ext_php_rs::exception::{PhpException, PhpResult};
 use ext_php_rs::zend::ce;
 use ext_php_rs::{php_class, php_impl};
-use mrml::prelude::parser::loader::{IncludeLoader, IncludeLoaderError};
 use mrml::prelude::parser::ParserOptions;
-use mrml::prelude::render::{default_fonts, RenderOptions};
+use mrml::prelude::parser::loader::{IncludeLoader, IncludeLoaderError};
+use mrml::prelude::render::{RenderOptions, default_fonts};
 use std::borrow::Cow;
 use std::io::{ErrorKind, Read};
 use std::sync::Arc;
 
-#[php_class(name = "Mjml\\Email")]
+#[php_class]
+#[php(name = "Mjml\\Email")]
 #[derive(Default)]
 pub struct Email {
     title: Option<String>,
@@ -41,7 +42,8 @@ impl Email {
 }
 
 /// Represents a MJML parser/renderer.
-#[php_class(name = "Mjml\\Mjml")]
+#[php_class]
+#[php(name = "Mjml\\Mjml")]
 pub struct Mjml {
     parser_options: ParserOptions,
     render_options: RenderOptions,
@@ -206,7 +208,7 @@ impl Mjml {
     pub fn default_fonts() -> ext_php_rs::boxed::ZBox<ext_php_rs::types::ZendHashTable> {
         let mut result = ext_php_rs::types::ZendHashTable::new();
         for (name, url) in default_fonts() {
-            let _ = result.insert(&name, url.to_string());
+            let _ = result.insert(name, url.to_string());
         }
 
         result

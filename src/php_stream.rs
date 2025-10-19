@@ -1,5 +1,5 @@
 use ext_php_rs::ffi::{php_stream, php_stream_context, zend_string};
-use std::ffi::{c_char, CString};
+use std::ffi::{CString, c_char};
 use std::io::Read;
 use std::os::raw::c_int;
 use std::ptr;
