@@ -9,12 +9,11 @@ env:
 
 jobs:
   tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         php-version: [ "8.3" ]
         clang: [ "14" ]
-        target: [ "x86_64-unknown-linux-gnu" ]
 
     steps:
       - name: Checkout
@@ -60,19 +59,18 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source $HOME/.cargo/env
           rustup default stable
-          rustup target add ${{ matrix.target }}
 
       - name: Build module
         run: |
           phpize
-          cargo build --target ${{ matrix.target }} --lib
-          cargo test --target ${{ matrix.target }}
+          ./configure --enable-cargo-debug
+          make
 
       - name: Run PHP Test
-        run: NO_INTERACTION=1 php run-tests.php -n -d extension=target/${{ matrix.target }}/debug/lib${{ env.EXTENSION_NAME }}.so
+        run: NO_INTERACTION=1 php run-tests.php -n -d extension=target/debug/lib${{ env.EXTENSION_NAME }}.so
 
   get-win-extension-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.extension-matrix.outputs.matrix }}
     steps:
@@ -217,7 +215,7 @@ jobs:
           path: target/php${{ matrix.php-version }}-${{ matrix.phpts }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.${{ env.LIB_EXT }}
 
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build-nix, build-windows]
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
 

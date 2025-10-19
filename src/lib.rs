@@ -6,15 +6,24 @@ mod php_stream;
 
 use ext_php_rs::prelude::*;
 use ext_php_rs::zend::ce;
+use crate::mjml::{Email, Mjml};
 
 #[php_class]
 #[php(extends(ce = ce::exception, stub = "Exception"))]
 struct RenderException {}
 
+#[php_module]
+pub fn module(module: ModuleBuilder) -> ModuleBuilder {
+    module
+        .class::<Mjml>()
+        .class::<Email>()
+        .class::<RenderException>()
+}
+
 #[cfg(test)]
 mod integration {
     use std::env;
-
+    use std::fmt::format;
     use std::process::Command;
     use std::sync::Once;
 
@@ -38,11 +47,7 @@ mod integration {
         let mut path = env::current_dir().expect("Could not get cwd");
         path.push("target");
         path.push("debug");
-        path.push(if std::env::consts::DLL_EXTENSION == "dll" {
-            "mjml"
-        } else {
-            "libmjml"
-        });
+        path.push(format!("{}mjml", std::env::consts::DLL_PREFIX));
         path.set_extension(std::env::consts::DLL_EXTENSION);
         let output = Command::new("php")
             .arg(format!("-dextension={}", path.to_str().unwrap()))
