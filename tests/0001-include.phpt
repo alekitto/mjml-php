@@ -5,4 +5,4 @@ include external file
 include __DIR__ . '/integration/0001-include.php';
 ?>
 --EXPECTF--
-<!doctype html><html xmlns="http://www.w3.org/1999/xhtml" %a
+<!doctype html><html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" %a

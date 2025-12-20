@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-ext-php-rs = "0.14.2"
+ext-php-rs = "0.15"
 mrml = "5"
 
 [profile.release]

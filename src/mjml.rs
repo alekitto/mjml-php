@@ -9,6 +9,8 @@ use mrml::prelude::render::{RenderOptions, default_fonts};
 use std::borrow::Cow;
 use std::io::{ErrorKind, Read};
 use std::sync::Arc;
+use mrml::mj_preview::MjPreviewChild;
+use mrml::prelude::OneOrMany::{Many, One};
 
 #[php_class]
 #[php(name = "Mjml\\Email")]
@@ -175,7 +177,27 @@ impl Mjml {
 
         if let Some(head) = mjml.head() {
             email.title = head.title().map(|title| title.children.to_string());
-            email.preview = head.preview().map(|preview| preview.children.to_string());
+            email.preview = head.preview()
+                .map(|preview| {
+                    let pr_to_str = |prev: &MjPreviewChild| {
+                        match prev {
+                            MjPreviewChild::Comment(ce) => "<--".to_owned() + ce.children.as_str() + "-->",
+                            MjPreviewChild::Text(tx) => tx.inner_str().to_string(),
+                        }
+                    };
+
+                    match &preview.children {
+                        One(prev) => pr_to_str(prev),
+                        Many(prevs) => {
+                            let mut res = String::new();
+                            for prev in prevs.iter() {
+                                res += pr_to_str(prev).as_str()
+                            }
+
+                            res
+                        },
+                    }
+                });
         }
 
         Ok(email)

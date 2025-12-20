@@ -23,7 +23,7 @@ pub fn module(module: ModuleBuilder) -> ModuleBuilder {
 #[cfg(test)]
 mod integration {
     use std::env;
-    use std::fmt::format;
+    
     use std::process::Command;
     use std::sync::Once;
 
