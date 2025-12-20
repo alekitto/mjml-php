@@ -1,10 +1,10 @@
 // vim:ft=javascript
 
 var PHP_CARGO_DEBUG = "no"
-var PHP_CARGO = "cargo"
+var PHP_CARGO = PATH_PROG("cargo") || "cargo"
 var PHP_MJML_SHARED = "yes"
 
-ARG_WITH("cargo", "cargo program name", "cargo")
+ARG_WITH("cargo", "cargo program name", PHP_CARGO)
 ARG_ENABLE("cargo-debug", "whether to enable cargo debug mode", "no")
 ARG_ENABLE("mjml-shared", "whether to build shared extension", "yes")
 
