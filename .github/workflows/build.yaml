@@ -80,7 +80,7 @@ jobs:
         id: extension-matrix
         uses: php/php-windows-builder/extension-matrix@v1
         with:
-          php-version-list: '8.1,8.2,8.3,8.4'
+          php-version-list: '8.1,8.2,8.3,8.4,8.5'
           arch-list: 'x64'
 
   build-windows:
@@ -126,7 +126,7 @@ jobs:
     strategy:
       matrix:
         clang: [ "14" ]
-        php-version: [ "8.1", "8.2", "8.3", "8.4" ]
+        php-version: [ "8.1", "8.2", "8.3", "8.4", "8.5" ]
         target: [ aarch64-apple-darwin, x86_64-apple-darwin, x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, aarch64-unknown-linux-gnu ]
         phpts: [ "nts", "ts" ]
         include:
