@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        php-version: [ "8.3" ]
-        clang: [ "14" ]
+        php-version: [ "8.3", "8.5" ]
+        clang: [ "20" ]
 
     steps:
       - name: Checkout
@@ -85,7 +85,7 @@ jobs:
 
   build-windows:
     needs: [tests, get-win-extension-matrix]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       matrix: ${{fromJson(needs.get-win-extension-matrix.outputs.matrix)}}
     steps:
@@ -102,15 +102,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-            ${{ runner.temp }}/llvm-${{ matrix.clang }}
+            ${{ runner.temp }}/llvm-20
           key: ${{ matrix.php-version }}-win-${{ matrix.arch }}-${{ matrix.ts }}-stable-build
-
-      - name: Install latest Rust toolchain
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          #source $HOME/.cargo/env
-          rustup default nightly
-        shell: bash
 
       - name: Build the extension
         uses: php/php-windows-builder/extension@v1
@@ -125,8 +118,8 @@ jobs:
     needs: tests
     strategy:
       matrix:
-        clang: [ "14" ]
-        php-version: [ "8.1", "8.2", "8.3", "8.4", "8.5" ]
+        clang: [ "20" ]
+        php-version: [ "8.1", "8.2", "8.3", "8.4" ]
         target: [ aarch64-apple-darwin, x86_64-apple-darwin, x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, aarch64-unknown-linux-gnu ]
         phpts: [ "nts", "ts" ]
         include:
