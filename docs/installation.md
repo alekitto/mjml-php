@@ -32,7 +32,7 @@ php -dextension=./target/release/mjml.so your-script.php
 
 ## Composer package (PIE)
 
-The project is published as a Composer package (`kcs/mjml`). Use [PIE](https://github.com/php-ext/pecl-installer) to pull the prebuilt artefact into your environment:
+The project is published as a Composer package (`kcs/mjml`). Use [PIE](https://github.com/php/pie) to pull the prebuilt artefact into your environment:
 
 ```sh
 pie install kcs/mjml
