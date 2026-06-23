@@ -28,7 +28,7 @@ clean: cargo_clean
 cargo_build:
 	$CARGO build $CARGO_MODE_FLAGS $CARGO_FEATURES_FLAGS
 	if [[ -f ./target/$CARGO_MODE_DIR/libmjml.dylib ]] ; then \\
-		cp ./target/$CARGO_MODE_DIR/libmjml.dylib ./modules/mjml.dylib ; fi
+		cp ./target/$CARGO_MODE_DIR/libmjml.dylib ./modules/mjml.so ; fi
 	if [[ -f ./target/$CARGO_MODE_DIR/libmjml.so ]] ; then \\
 		cp ./target/$CARGO_MODE_DIR/libmjml.so ./modules/mjml.so ; fi
 
