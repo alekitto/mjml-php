@@ -1,4 +1,4 @@
-use crate::exception::RENDER_EXCEPTION;
+use crate::exception::render_exception;
 use crate::php_stream::PhpStream;
 use ext_php_rs::exception::{PhpException, PhpResult};
 use ext_php_rs::zend::ce;
@@ -156,17 +156,13 @@ impl Mjml {
         let mjml = match mrml::parse_with_options(mjml, &self.parser_options) {
             Ok(parsed) => parsed.element,
             Err(e) => {
-                return Err(PhpException::new(e.to_string(), 0, unsafe {
-                    RENDER_EXCEPTION.expect("did not set exception ce")
-                }));
+                return Err(PhpException::new(e.to_string(), 0, render_exception()));
             }
         };
 
         let body = match mjml.render(&self.render_options) {
             Ok(rendered) => Ok(rendered),
-            Err(e) => Err(PhpException::new(e.to_string(), 0, unsafe {
-                RENDER_EXCEPTION.expect("did not set exception ce")
-            })),
+            Err(e) => Err(PhpException::new(e.to_string(), 0, render_exception())),
         }?;
 
         let mut email = Email {
@@ -210,18 +206,13 @@ impl Mjml {
     ///
     /// * `path` - The MJML file path to render
     pub fn render_file(&self, path: String) -> PhpResult<Email> {
-        let mut stream = PhpStream::open(&path, "rb").map_err(|e| {
-            PhpException::new(e.to_string(), 0, unsafe {
-                RENDER_EXCEPTION.expect("did not set exception ce")
-            })
-        })?;
+        let mut stream = PhpStream::open(&path, "rb")
+            .map_err(|e| PhpException::new(e.to_string(), 0, render_exception()))?;
 
         let mut template = String::new();
-        stream.read_to_string(&mut template).map_err(|e| {
-            PhpException::new(e.to_string(), 0, unsafe {
-                RENDER_EXCEPTION.expect("did not set exception ce")
-            })
-        })?;
+        stream
+            .read_to_string(&mut template)
+            .map_err(|e| PhpException::new(e.to_string(), 0, render_exception()))?;
 
         self.render(template)
     }

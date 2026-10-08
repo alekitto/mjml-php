@@ -4,13 +4,9 @@ mod exception;
 mod mjml;
 mod php_stream;
 
-use ext_php_rs::prelude::*;
-use ext_php_rs::zend::ce;
+use crate::exception::RenderException;
 use crate::mjml::{Email, Mjml};
-
-#[php_class]
-#[php(extends(ce = ce::exception, stub = "Exception"))]
-struct RenderException {}
+use ext_php_rs::prelude::*;
 
 #[php_module]
 pub fn module(module: ModuleBuilder) -> ModuleBuilder {
@@ -86,5 +82,10 @@ mod integration {
     #[test]
     pub fn test_default_fonts() {
         assert!(run_php("0005-default-fonts.php"));
+    }
+
+    #[test]
+    pub fn test_render_exception() {
+        assert!(run_php("0007-render-exception.php"));
     }
 }
