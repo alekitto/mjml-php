@@ -113,7 +113,7 @@ impl Mjml {
                     return Ok(default_fonts());
                 };
                 let Some(value) = zv.array() else {
-                    return Err(PhpException::default(format!(
+                    return Err(PhpException::from_message(format!(
                         "Invalid option 'fonts': expected array, {} given.",
                         zv.get_type()
                     )));
